@@ -16,6 +16,7 @@ import { MockInterview } from "@/utils/schema";
 import { useUser } from "@clerk/nextjs";
 import { LoaderCircle } from "lucide-react";
 import moment from "moment";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -29,10 +30,12 @@ const AddNewInterview = () => {
 
   const { user } = useUser();
 
+  const router = useRouter();
+
   const onSubmit = async (e) => {
     setLoading(true);
 
-    console.log(jobPosition, jobDescription, jobExperience);
+    // console.log(jobPosition, jobDescription, jobExperience);
     e.preventDefault();
 
     const InputPrompt =
@@ -72,7 +75,8 @@ const AddNewInterview = () => {
       console.log("Inserted ID", response);
 
       if (response) {
-        setOpenDialog(false)
+        setOpenDialog(false);
+        router.push("/dashboard/interview/" + response[0].mockId);
       }
     } else {
       console.log("some error");
