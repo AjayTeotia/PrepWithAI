@@ -1,6 +1,6 @@
 import React from "react";
-import Logo from "../logo/Logo";
-import { ModeToggle } from "../modeToggle/ModeToggle";
+import Logo from "../../../../components/logo/Logo";
+import { ModeToggle } from "../../../../components/modeToggle/ModeToggle";
 
 const AuthHeader = () => {
   return (

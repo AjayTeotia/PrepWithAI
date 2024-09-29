@@ -1,4 +1,4 @@
-import AuthHeader from "@/components/authHeader/AuthHeader";
+import AuthHeader from "@/app/(auth)/_components/authHeader/AuthHeader";
 import { SignIn } from "@clerk/nextjs";
 
 export default function Page() {
