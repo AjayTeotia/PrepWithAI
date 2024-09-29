@@ -36,7 +36,6 @@ const Header = () => {
 
   return (
     <div className="flex items-center p-4 justify-between border-b shadow-md">
-      
       <Logo />
 
       <div className="flex items-center">
