@@ -13,12 +13,13 @@ import {
   Menu,
   Shield,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 const Header = () => {
   const [loading, setLoading] = useState(true);
   const path = usePathname();
+  const router = useRouter(); 
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -34,6 +35,10 @@ const Header = () => {
     { icon: <Shield />, label: "Upgrade", path: "/dashboard/upgrade" },
   ];
 
+  const handleNavClick = (itemPath) => {
+    router.push(itemPath); 
+  };
+
   return (
     <div className="flex items-center p-4 justify-between border-b shadow-md">
       <Logo />
@@ -46,6 +51,7 @@ const Header = () => {
               className={`hover:font-bold hover:text-[#ff0f7b] cursor-pointer transition-all flex gap-2 ${
                 path === itemPath ? "font-bold text-[#ff0f7b]" : ""
               }`}
+              onClick={() => handleNavClick(itemPath)} 
             >
               {icon} {label}
             </li>
@@ -56,7 +62,7 @@ const Header = () => {
       <div className="hidden md:flex items-center gap-4">
         <ModeToggle />
         {loading ? (
-          <Skeleton className="h-12 w-12 rounded-full" />
+          <Skeleton className="h-10 w-10 rounded-full" />
         ) : (
           <UserButton />
         )}
@@ -79,6 +85,7 @@ const Header = () => {
                   className={`hover:font-bold hover:text-[#ff0f7b] cursor-pointer transition-all flex gap-2 ${
                     path === itemPath ? "font-bold text-[#ff0f7b]" : ""
                   }`}
+                  onClick={() => handleNavClick(itemPath)} 
                 >
                   {icon} {label}
                 </li>
