@@ -54,7 +54,7 @@ const AddNewInterview = () => {
       .text()
       .replace("```json", "")
       .replace("```", "");
-    console.log(JSON.parse(MockJsonResponse));
+    // console.log(JSON.parse(MockJsonResponse));
 
     setJsonResponse(MockJsonResponse);
 

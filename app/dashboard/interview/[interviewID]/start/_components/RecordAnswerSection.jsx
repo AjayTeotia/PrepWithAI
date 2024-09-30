@@ -1,14 +1,26 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { db } from "@/utils/db";
+import { chatSession } from "@/utils/GeminiAIModel";
+import { UserAnswer } from "@/utils/schema";
+import { useUser } from "@clerk/nextjs";
 import { Mic, WebcamIcon } from "lucide-react";
+import moment from "moment";
 import React, { useEffect, useState } from "react";
 import useSpeechToText from "react-hook-speech-to-text";
 import Webcam from "react-webcam";
+import { toast } from "sonner";
 
-const RecordAnswerSection = () => {
+const RecordAnswerSection = ({
+  mockInterviewQuestion,
+  activeQuestionIndex,
+  interviewData,
+}) => {
   const [webcamEnabled, setWebcamEnabled] = useState(false);
   const [userAnswer, setUserAnswer] = useState("");
+  const { user } = useUser();
+  const [loading, setLoading] = useState(false);
 
   const {
     error,
@@ -16,15 +28,108 @@ const RecordAnswerSection = () => {
     results,
     startSpeechToText,
     stopSpeechToText,
+    setResults,
   } = useSpeechToText({
     continuous: true,
     useLegacyResults: false,
   });
 
-  const handleRecordClick = () => {
+  const currentQuestion =
+    mockInterviewQuestion &&
+    activeQuestionIndex >= 0 &&
+    activeQuestionIndex < mockInterviewQuestion.length
+      ? mockInterviewQuestion[activeQuestionIndex].question
+      : null;
+
+  const saveUserAnswer = async () => {
     if (isRecording) {
+      setLoading(true);
       stopSpeechToText();
       setWebcamEnabled(false);
+
+      if (
+        !mockInterviewQuestion ||
+        activeQuestionIndex < 0 ||
+        activeQuestionIndex >= mockInterviewQuestion.length
+      ) {
+        toast.error("No valid question available.");
+        return;
+      }
+
+      const currentQuestion =
+        mockInterviewQuestion[activeQuestionIndex]?.question;
+
+      const currentAnswer = mockInterviewQuestion[activeQuestionIndex]?.answer;
+
+      if (!currentQuestion) {
+        toast.error("Current question is not available.");
+        return;
+      }
+
+      const feedbackPrompt =
+        "Question: " +
+        currentQuestion +
+        ", User Answer: " +
+        userAnswer +
+        ", Depends on question and user answer for given interview question " +
+        "please give us rating for answer and feedback as area of improvement if any " +
+        "in just 3 to 5 lines to improve it in JSON format with rating field and feedback field.";
+
+      try {
+        const res = await chatSession.sendMessage(feedbackPrompt);
+        const MockJsonResponse = await res.response
+          .text()
+          .replace("```json", "")
+          .replace("```", "");
+
+        const JsonFeedbackResponse = JSON.parse(MockJsonResponse);
+
+        // Check if interviewData and mockId exist
+        if (!interviewData || !interviewData.mockId) {
+          toast.error("Interview data is not available.");
+          setLoading(false);
+          return;
+        }
+
+        const resp = await db.insert(UserAnswer).values({
+          mockIdRef: interviewData.mockId,
+          question: currentQuestion,
+          correctAns: currentAnswer,
+          userAns: userAnswer,
+          feedback: JsonFeedbackResponse?.feedback,
+          rating: JsonFeedbackResponse?.rating,
+          userEmail: user?.primaryEmailAddress?.emailAddress,
+          createdAt: moment().format("DD-MM-YYYY"),
+        });
+
+        /* console.log({
+          mockIdRef: interviewData.mockId,
+          question: currentQuestion,
+          correctAns: currentAnswer,
+          userAns: userAnswer,
+          feedback: JsonFeedbackResponse?.feedback,
+          rating: JsonFeedbackResponse?.rating,
+          userEmail: user?.primaryEmailAddress?.emailAddress,
+          createdAt: moment().format("DD-MM-YYYY"),
+        });*/
+
+        if (resp) {
+          //console.log("Database response:", resp);
+          toast.success("Answer saved successfully.");
+          setUserAnswer("");
+          setResults([]);
+        } else {
+          toast.error("Failed to save answer to the database.");
+        }
+        
+        setResults([]);
+        setUserAnswer("");
+      } catch (error) {
+        console.error("Error saving user answer:", error);
+        toast.error("Error while saving your answer.");
+      } finally {
+        setLoading(false);
+      }
     } else {
       startSpeechToText();
       setWebcamEnabled(true);
@@ -58,9 +163,10 @@ const RecordAnswerSection = () => {
       </div>
 
       <Button
+        disabled={loading}
         variant="outline"
         className="mt-5 w-full max-w-xs"
-        onClick={handleRecordClick}
+        onClick={saveUserAnswer}
       >
         {isRecording ? (
           <h2 className="text-red-600 flex items-center">
@@ -70,14 +176,6 @@ const RecordAnswerSection = () => {
         ) : (
           "Record Answer"
         )}
-      </Button>
-
-      <Button
-        onClick={() => console.log(userAnswer)}
-        variant="outline"
-        className="mt-2 w-full max-w-xs"
-      >
-        Show User Answer
       </Button>
     </div>
   );
