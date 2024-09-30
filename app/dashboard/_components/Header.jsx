@@ -19,7 +19,7 @@ import React, { useEffect, useState } from "react";
 const Header = () => {
   const [loading, setLoading] = useState(true);
   const path = usePathname();
-  const router = useRouter(); 
+  const router = useRouter();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -30,13 +30,10 @@ const Header = () => {
 
   const navItems = [
     { icon: <LayoutDashboard />, label: "Dashboard", path: "/dashboard" },
-    { icon: <CircleHelp />, label: "Question", path: "/dashboard/question" },
-    { icon: <BookOpen />, label: "How it Works?", path: "/dashboard/how" },
-    { icon: <Shield />, label: "Upgrade", path: "/dashboard/upgrade" },
   ];
 
   const handleNavClick = (itemPath) => {
-    router.push(itemPath); 
+    router.push(itemPath);
   };
 
   return (
@@ -51,7 +48,7 @@ const Header = () => {
               className={`hover:font-bold hover:text-[#ff0f7b] cursor-pointer transition-all flex gap-2 ${
                 path === itemPath ? "font-bold text-[#ff0f7b]" : ""
               }`}
-              onClick={() => handleNavClick(itemPath)} 
+              onClick={() => handleNavClick(itemPath)}
             >
               {icon} {label}
             </li>
@@ -85,7 +82,7 @@ const Header = () => {
                   className={`hover:font-bold hover:text-[#ff0f7b] cursor-pointer transition-all flex gap-2 ${
                     path === itemPath ? "font-bold text-[#ff0f7b]" : ""
                   }`}
-                  onClick={() => handleNavClick(itemPath)} 
+                  onClick={() => handleNavClick(itemPath)}
                 >
                   {icon} {label}
                 </li>
